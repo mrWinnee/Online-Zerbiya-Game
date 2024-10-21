@@ -218,9 +218,13 @@ io.on('connection', (socket) => {
     })
     
 
-
 })
 
+if(process.env.NODE_ENV === "production"){
+    app.get('*', (req, res)=>{
+        res.sendFile(__dirname + 'public/index.html')
+    })
+}
 
 server.listen(port, ()=>{
     console.log('listening on port '+ port)
