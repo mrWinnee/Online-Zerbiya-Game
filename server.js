@@ -7,6 +7,8 @@ const io = new Server(server, {
         origin: "https://online-zerbiya-game.onrender.com/",
         methods: ["GET", "POST"],
     },
+    pingTimeout: 30000,
+    pingInterval: 25000
 })
 
 const { v4: uuidv4 } = require('uuid')
@@ -24,7 +26,8 @@ let rooms = {
     /*uuid: {
         yweugfyuwef: {
             squaresOwned: 0,
-            color: 
+            color: ,
+            turn: true || false
         },
         
     }*/
@@ -64,7 +67,7 @@ function getSquaresFromSide(sideName){
             const squareName = unformatedCorrespendantSquares[i].substring(0, unformatedCorrespendantSquares[i].length - 2);
             formatedCorrespendantSquares.push(squareName);
         }
-        return formatedCorrespendantSquares; 
+    return formatedCorrespendantSquares; 
 }
 
 function getCoordinatesFromSquareName(squareName){
@@ -93,7 +96,8 @@ io.on('connection', (socket) => {
         }
         rooms[roomId][socket.id] = {
             squaresOwned: 0,
-            color: 'Red'
+            color: 'Red',
+            turn: true
         }
 
         socket.join(roomId);
@@ -112,7 +116,8 @@ io.on('connection', (socket) => {
                 if(playersInRoom.length <= 1){
                     rooms[roomKey][socket.id] = {
                         squaresOwned: 0,
-                        color: 'Blue'
+                        color: 'Blue',
+                        turn: false
                     }
                     isValidId = true;
                 }
@@ -158,17 +163,16 @@ io.on('connection', (socket) => {
             if(roomsPogress[specifiedRoom]['squares'][square] == 4){
                 rooms[specifiedRoom][socket.id].squaresOwned++;
                 io.to(specifiedRoom).emit('confirmedSquare', {turn, x: squareCoordinates.x, y: squareCoordinates.y});
-                
-                // update score of player
-
-                const score = {
-                    redPlayer : rooms[specifiedRoom][getUser(socket, 0)].squaresOwned,
-                    bluePlayer : rooms[specifiedRoom][getUser(socket, 1)].squaresOwned,
-                    nextTurn : turn  == 'Red' ? 'Blue' : 'Red'
-                }
-                io.to(specifiedRoom).emit('updateScore', score);
             }
+
         })
+        // update score of player
+        const score = {
+            redPlayer : rooms[specifiedRoom][getUser(socket, 0)].squaresOwned,
+            bluePlayer : rooms[specifiedRoom][getUser(socket, 1)].squaresOwned,
+            nextTurn : turn  == 'Red' ? 'Blue' : 'Red'
+        }
+        io.to(specifiedRoom).emit('updateScore', score);
 
 
         // check if the game ended and return the winner
@@ -194,13 +198,24 @@ io.on('connection', (socket) => {
 
         
         roomsPogress[specifiedRoom].turn = turn  == 'Red' ? 'Blue' : 'Red';
-
-        socket.to(specifiedRoom).emit('yourTurn');
     })
 
-
-    socket.on('turn', ()=>{
-        io.to(getUser(socket, 0)).emit('yourTurn');
+    //check for turn on side click to to verify if it's his turn and change turn between players
+    socket.on("checkForTurnClient", (data)=>{
+        const specifiedRoom = findRoomFromSocket(socket);
+        const clients = getClientsInRoom(specifiedRoom);
+        if(rooms[specifiedRoom][socket.id].turn){
+            rooms[specifiedRoom][socket.id].turn = false;
+            //console.log(clients)
+            clients.map((client)=>{
+                //console.log(client);
+                //console.log(socket.id);
+                if (client != socket.id){
+                   rooms[specifiedRoom][client].turn = true;
+                }
+            })
+            socket.emit("checkForTurnServer", data);
+        }
     })
 
     socket.on('leaveCurrentRoom', ()=>{

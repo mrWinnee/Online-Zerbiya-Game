@@ -3,14 +3,14 @@ class Scene3 extends Phaser.Scene {
         super('playGame');
         this.gameSize = 9;
         this.squareTiles = {};
-        this.turn = false;
+        this.playableSides;
     }
 
     
     create(){
 
 
-        this.input.on('gameobjectdown', this.countSide, this);
+        this.input.on('gameobjectup', this.countSide, this);
 
 
         ////////////////////////////////////////////////////
@@ -33,7 +33,20 @@ class Scene3 extends Phaser.Scene {
         socket.emit('sendSquares', this.squareTiles);
         socket.emit('gameSize', this.gameSize);
 
-        socket.emit('turn');
+
+
+
+        socket.on("checkForTurnServer", (data)=>{
+            //console.log(data.gameObject);
+            //data.gameObject.disableInteractive();
+            this.playableSides.map((playableSide)=>{
+                if(data.name == playableSide.name){
+                    playableSide.disableInteractive();
+                }
+            })
+            socket.emit('sideClicked', data);
+        })
+
 
         //listening to the server response after pressing a side
         socket.on('sideClickedVerified', ({sideName, x, y, turn})=>{
@@ -41,31 +54,27 @@ class Scene3 extends Phaser.Scene {
                 //theObject.destroy();
                 switch (turn) {
                     case 'Red':
-                        this.add.sprite(x,y,'hRedSide').setOrigin(0);
+                        this.add.image(x,y,'hRedSide').setOrigin(0);
                         break;
                     case 'Blue':
-                        this.add.sprite(x,y,'hBlueSide').setOrigin(0);
+                        this.add.image(x,y,'hBlueSide').setOrigin(0);
                         break;
                 }
             }else {
                 //theObject.destroy();
                 switch (turn) {
                     case 'Red':
-                        this.add.sprite(x,y,'vRedSide').setOrigin(0);
+                        this.add.image(x,y,'vRedSide').setOrigin(0);
                         break;
                     case 'Blue':
-                        this.add.sprite(x,y,'vBlueSide').setOrigin(0);
+                        this.add.image(x,y,'vBlueSide').setOrigin(0);
                         break;
                 }
             }
 
-            this.turn = false;
         })
 
 
-        socket.on('yourTurn', ()=>{
-            this.turn = true;
-        })
 
         socket.on('confirmedSquare', ({turn, x, y})=>{
             switch (turn) {
@@ -263,18 +272,18 @@ class Scene3 extends Phaser.Scene {
     }
     drawHSideTile(x, y, name){
         
-        const hSideTile = this.add.sprite(x * 48 + 4, y * 48, 'hSide');
+        const hSideTile = this.add.sprite(x * 48 + 4, y * 48, 'hSide', 1);
         hSideTile.setOrigin(0);
-        hSideTile.play('playableHSide');
+        //hSideTile.play('playableHSide');
         hSideTile.setInteractive();
         hSideTile.name = name;
 
     }
     drawVSideTile(x, y, name){
         
-        const vSideTile = this.add.sprite(x * 48, y * 48 + 4, 'vSide');
+        const vSideTile = this.add.sprite(x * 48, y * 48 + 4, 'vSide', 1);
         vSideTile.setOrigin(0);
-        vSideTile.play('playableVSide');
+        //vSideTile.play('playableVSide');
         vSideTile.setInteractive();
         vSideTile.name = name;
     }
@@ -354,24 +363,28 @@ class Scene3 extends Phaser.Scene {
                 }
             }
         }
+
+
+        this.playableSides = this.children.list.filter(obj => obj instanceof Phaser.GameObjects.Sprite);
     }
 
     //////////////////////////////////////////////////////////
     /*               count side on click function          */
-    countSide(pointer, gameObject){
-        if(this.turn){
-            gameObject.disableInteractive();
-
-            const data = {
-                sideName : gameObject.name,
-                x : gameObject.x,
-                y : gameObject.y
-            }
-    
-    
-            socket.emit('sideClicked', data);
+    countSide(pointer, gameObject, event){
+        event.stopPropagation();
+        //gameObject.disableInteractive();
+        //send to the server a click event to check if it's valid turn based on the turn of the player sent it
+        const data = {
+            sideName : gameObject.name,
+            x : gameObject.x,
+            y : gameObject.y
         }
+        socket.emit("checkForTurnClient", data);
+        //console.log(data.gameObject);
+        
     }
+
+    
 
 
 

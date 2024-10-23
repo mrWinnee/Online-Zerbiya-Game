@@ -21,22 +21,10 @@ class Scene1 extends Phaser.Scene {
             frameHeight: 48
         });
 
-        this.load.spritesheet('hRedSide', "./assets/hRedSide.png", {
-            frameWidth: 48,
-            frameHeight: 8
-        });
-        this.load.spritesheet('vRedSide', "./assets/vRedSide.png", {
-            frameWidth: 8,
-            frameHeight: 48
-        });
-        this.load.spritesheet('hBlueSide', "./assets/hBlueSide.png", {
-            frameWidth: 48,
-            frameHeight: 8
-        });
-        this.load.spritesheet('vBlueSide', "./assets/vBlueSide.png", {
-            frameWidth: 8,
-            frameHeight: 48
-        });
+        this.load.image('hRedSide', "./assets/hRedSide.png");
+        this.load.image('vRedSide', "./assets/vRedSide.png");
+        this.load.image('hBlueSide', "./assets/hBlueSide.png");
+        this.load.image('vBlueSide', "./assets/vBlueSide.png");
 
         this.load.image('redPiece', "./assets/redPiece.png");
         this.load.image('bluePiece', "./assets/bluePiece.png");
