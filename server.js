@@ -7,6 +7,7 @@ const io = new Server(server, {
         origin: "https://online-zerbiya-game.onrender.com/",
         methods: ["GET", "POST"],
     },
+    //server tolerance
     pingTimeout: 30000,
     pingInterval: 25000
 })
@@ -206,10 +207,7 @@ io.on('connection', (socket) => {
         const clients = getClientsInRoom(specifiedRoom);
         if(rooms[specifiedRoom][socket.id].turn){
             rooms[specifiedRoom][socket.id].turn = false;
-            //console.log(clients)
             clients.map((client)=>{
-                //console.log(client);
-                //console.log(socket.id);
                 if (client != socket.id){
                    rooms[specifiedRoom][client].turn = true;
                 }

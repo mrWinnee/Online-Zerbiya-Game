@@ -4,6 +4,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     preload(){
+
         
         this.load.image('woodTile', "./assets/wood-tile.png");
         this.load.image('hEdge', "./assets/hEdge.png");
@@ -11,6 +12,11 @@ class Scene1 extends Phaser.Scene {
         
         this.load.image('cPB', "./assets/createPartyBtn.png");
         this.load.image('jPB', "./assets/joinPartyBtn.png");
+
+        this.load.spritesheet('bg', "./assets/bgSprite.png",{
+            frameWidth: 500,
+            frameHeight: 900
+        });
 
         this.load.spritesheet('hSide', "./assets/hSide.png", {
             frameWidth: 48,
@@ -31,7 +37,23 @@ class Scene1 extends Phaser.Scene {
     }
 
     create(){
+
         
+        this.anims.create({
+            key: 'shiftToBlue',
+            frames: this.anims.generateFrameNumbers('bg', { start: 0, end: 4 }),
+            frameRate: 15,
+            repeat: 0
+        });
+
+        this.anims.create({
+            key: 'shiftToRed',
+            frames: this.anims.generateFrameNumbers('bg', { start: 4, end: 8 }),
+            frameRate: 15,
+            repeat: 0
+        });
+
+
         this.anims.create({
             key: 'playableHSide',
             frames: this.anims.generateFrameNumbers('hSide'),
