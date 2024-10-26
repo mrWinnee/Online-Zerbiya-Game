@@ -6,25 +6,31 @@ class Scene1 extends Phaser.Scene {
     preload(){
 
         
-        this.load.image('woodTile', "./assets/wood-tile.png");
+        //this.load.image('woodTile', "./assets/wood-tile.png");
+        this.load.image('woodTile', "./assets/squareTile.png");
         this.load.image('hEdge', "./assets/hEdge.png");
         this.load.image('vEdge', "./assets/vEdge.png");
         
         this.load.image('cPB', "./assets/createPartyBtn.png");
         this.load.image('jPB', "./assets/joinPartyBtn.png");
 
-        this.load.spritesheet('bg', "./assets/bgSprite.png",{
-            frameWidth: 500,
-            frameHeight: 900
+        this.load.spritesheet('hbg', "./assets/hbg.png",{
+            frameWidth: 1280,
+            frameHeight: 720
         });
 
-        this.load.spritesheet('hSide', "./assets/hSide.png", {
-            frameWidth: 48,
-            frameHeight: 8
+        this.load.spritesheet('vbg', "./assets/vbg.png",{
+            frameWidth: 720,
+            frameHeight: 1280
         });
-        this.load.spritesheet('vSide', "./assets/vSide.png", {
-            frameWidth: 8,
-            frameHeight: 48
+
+        this.load.spritesheet('hSideHolder', "./assets/hSideHolder.png", {
+            frameWidth: 64,
+            frameHeight: 12
+        });
+        this.load.spritesheet('vSideHolder', "./assets/vSideHolder.png", {
+            frameWidth: 12,
+            frameHeight: 64
         });
 
         this.load.image('hRedSide', "./assets/hRedSide.png");
@@ -34,38 +40,18 @@ class Scene1 extends Phaser.Scene {
 
         this.load.image('redPiece', "./assets/redPiece.png");
         this.load.image('bluePiece', "./assets/bluePiece.png");
+
+        this.load.spritesheet('redTurnArea', "./assets/redTurnArea.png",{
+            frameWidth : 300,
+            frameHeight : 100
+        });
+        this.load.spritesheet('blueTurnArea', "./assets/blueTurnArea.png",{
+            frameWidth : 300,
+            frameHeight : 100
+        });
     }
 
     create(){
-
-        
-        this.anims.create({
-            key: 'shiftToBlue',
-            frames: this.anims.generateFrameNumbers('bg', { start: 0, end: 4 }),
-            frameRate: 15,
-            repeat: 0
-        });
-
-        this.anims.create({
-            key: 'shiftToRed',
-            frames: this.anims.generateFrameNumbers('bg', { start: 4, end: 8 }),
-            frameRate: 15,
-            repeat: 0
-        });
-
-
-        this.anims.create({
-            key: 'playableHSide',
-            frames: this.anims.generateFrameNumbers('hSide'),
-            frameRate: 2,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'playableVSide',
-            frames: this.anims.generateFrameNumbers('vSide'),
-            frameRate: 2,
-            repeat: -1
-        });
         
         this.add.text(20, 20, "Loading game...");
         this.scene.start('createGame');

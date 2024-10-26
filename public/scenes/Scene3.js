@@ -5,6 +5,10 @@ class Scene3 extends Phaser.Scene {
     this.gameSize = 9;
     this.squareTiles = {};
     this.playableSides;
+    this.squareSize = 64;
+    this.edgeSize = 6;
+    this.offsetX = (config.width / 2) - ((this.gameSize / 2) * this.squareSize);
+    this.offsetY = (config.height / 2) - ((this.gameSize / 2) * this.squareSize);
   }
 
   create() {
@@ -15,18 +19,36 @@ class Scene3 extends Phaser.Scene {
 
     this.drawPattern(this.gameSize);
 
-    const redPlayerScore = this.add.text(0, 0, `player : Red \n score : 0`);
-    const bluePlayerScore = this.add.text(300, 0, `player : Blue \n socre : 0`);
-    const turnIndicator = this.add.text(
+    const redTurnArea = this.add.sprite(config.width/4, 10, 'redTurnArea', 0).setOrigin(.5, 0);
+    const blueTurnArea = this.add.sprite((config.width/4)*3, 10, 'blueTurnArea', 1).setOrigin(.5, 0);
+
+    const redPlayerScore = this.add.text(config.width/4, redTurnArea.height/2 + 5, `player : Red \n score : 0`,{
+      font: '32px "Permanent Marker"',  // Reference the Google Font here
+      fill: '#FFFFFF'
+    }).setOrigin(.5, .5);
+    const bluePlayerScore = this.add.text((config.width/4) * 3, blueTurnArea.height/2 + 5, `player : Blue \n socre : 0`,{
+      font: '32px "Permanent Marker"',  // Reference the Google Font here
+      fill: '#FFFFFF'
+    }).setOrigin(.5, .5);
+    /*const turnIndicator = this.add.text(
       config.width / 2 - 48,
       config.height - 96,
       `Red Turn`
-    );
+    );*/
 
     socket.on("updateScore", (score) => {
       redPlayerScore.setText(`player : Red \n score : ${score.redPlayer}`);
       bluePlayerScore.setText(`player : Blue \n score : ${score.bluePlayer}`);
-      turnIndicator.setText(`${score.nextTurn} Turn`);
+      //turnIndicator.setText(`${score.nextTurn} Turn`);
+      if(score.nextTurn == 'Red'){
+        //red turn
+        redTurnArea.setFrame(0);
+        blueTurnArea.setFrame(1);
+      }else{
+        //blueturn
+        blueTurnArea.setFrame(0);
+        redTurnArea.setFrame(1);
+      }
     });
 
     //send game squares and sides to the backend to prevent playing with them
@@ -79,10 +101,10 @@ class Scene3 extends Phaser.Scene {
     socket.on("confirmedSquare", ({ turn, x, y }) => {
       switch (turn) {
         case "Red":
-          this.add.image(x * 48 + 4, y * 48 + 4, "redPiece").setOrigin(0);
+          this.add.image(this.offsetX + x * this.squareSize + this.edgeSize, this.offsetY + y * this.squareSize + this.edgeSize, "redPiece").setOrigin(0);
           break;
         case "Blue":
-          this.add.image(x * 48 + 4, y * 48 + 4, "bluePiece").setOrigin(0);
+          this.add.image(this.offsetX + x * this.squareSize + this.edgeSize, this.offsetY + y * this.squareSize + this.edgeSize, "bluePiece").setOrigin(0);
           break;
       }
     });
@@ -248,23 +270,23 @@ class Scene3 extends Phaser.Scene {
   ////////////////////////////////////////////////////////
   /*                  drawing function                 */
   drawWoodTile(x, y) {
-    this.add.image(x * 48 + 4, y * 48 + 4, "woodTile").setOrigin(0, 0);
+    this.add.image(this.offsetX + x * this.squareSize + this.edgeSize, this.offsetY + y * this.squareSize + this.edgeSize, "woodTile").setOrigin(0, 0);
   }
   drawHEdgeTile(x, y) {
-    this.add.image(x * 48 + 4, y * 48, "hEdge").setOrigin(0);
+    this.add.image(this.offsetX + x * this.squareSize + this.edgeSize, this.offsetY + y * this.squareSize, "hEdge").setOrigin(0);
   }
   drawVEdgeTile(x, y) {
-    this.add.image(x * 48, y * 48 + 4, "vEdge").setOrigin(0);
+    this.add.image(this.offsetX + x * this.squareSize, this.offsetY + y * this.squareSize + this.edgeSize, "vEdge").setOrigin(0);
   }
   drawHSideTile(x, y, name) {
-    const hSideTile = this.add.sprite(x * 48 + 4, y * 48, "hSide", 1);
+    const hSideTile = this.add.sprite(this.offsetX + x * this.squareSize + this.edgeSize, this.offsetY + y * this.squareSize, "hSideHolder");
     hSideTile.setOrigin(0);
     //hSideTile.play('playableHSide');
     hSideTile.setInteractive();
     hSideTile.name = name;
   }
   drawVSideTile(x, y, name) {
-    const vSideTile = this.add.sprite(x * 48, y * 48 + 4, "vSide", 1);
+    const vSideTile = this.add.sprite(this.offsetX + x * this.squareSize, this.offsetY + y * this.squareSize + this.edgeSize, "vSideHolder");
     vSideTile.setOrigin(0);
     //vSideTile.play('playableVSide');
     vSideTile.setInteractive();
@@ -284,7 +306,7 @@ class Scene3 extends Phaser.Scene {
     for (let i = 0; i < gamePattern.length; i++) {
       for (let j = 0; j < gamePattern[i].length; j++) {
         if (gamePattern[i][j] === 1) {
-          this.drawWoodTile(j, i); // Draw at (x, y) where the value is 1
+          this.drawWoodTile(j, i); // Draw at (x, y) where the value is 1s
           this.squareTiles["X" + j + "Y" + i] = 0;
         }
       }
@@ -342,7 +364,37 @@ class Scene3 extends Phaser.Scene {
       }
     }
 
-    this.bg = this.add.sprite(config.width/2, config.height/2, 'bg', 0).setDepth(-1);
+    if(config.width / config.height > 1){
+      this.bg = this.add.sprite(config.width/2, config.height/2, 'hbg', 0).setDepth(-1);
+      this.anims.create({
+        key: 'shiftToBlue',
+        frames: this.anims.generateFrameNumbers('hbg', { start: 0, end: 4 }),
+        frameRate: 15,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'shiftToRed',
+        frames: this.anims.generateFrameNumbers('hbg', { start: 4, end: 8 }),
+        frameRate: 15,
+        repeat: 0
+    });
+    }else{
+      this.bg = this.add.sprite(config.width/2, config.height/2, 'vbg', 0).setDepth(-1);
+      this.anims.create({
+        key: 'shiftToBlue',
+        frames: this.anims.generateFrameNumbers('vbg', { start: 0, end: 4 }),
+        frameRate: 15,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'shiftToRed',
+        frames: this.anims.generateFrameNumbers('vbg', { start: 4, end: 8 }),
+        frameRate: 15,
+        repeat: 0
+    });
+    }
 
     this.playableSides = this.children.list.filter(
       (obj) => obj instanceof Phaser.GameObjects.Sprite

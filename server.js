@@ -107,6 +107,12 @@ io.on('connection', (socket) => {
     })
 
     socket.on('checkRoomId', (enteredRoomId)=>{
+        const roomOrUndefined = findRoomFromSocket(socket);
+        if(roomOrUndefined != undefined){
+            socket.leave(roomOrUndefined);
+            delete rooms[roomOrUndefined];
+            delete roomsPogress[roomOrUndefined];
+        }
         const roomsKeys = Object.keys(rooms);
         let playersInRoom;
         
@@ -234,7 +240,7 @@ io.on('connection', (socket) => {
 
 if(process.env.NODE_ENV === "production"){
     app.get('*', (req, res)=>{
-        res.sendFile(__dirname + 'public/index.html')
+        res.sendFile(__dirname + './index.html')
     })
 }
 

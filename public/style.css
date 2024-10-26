@@ -3,3 +3,18 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+/* Remove all default margins and paddings */
+html, body {
+    overflow: hidden; /* Prevents scrollbars */
+    width: 100%;
+    height: 100%;
+    background: #000;
+}
+
+/* Make the canvas take the full screen */
+canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}

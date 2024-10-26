@@ -5,8 +5,19 @@ class Scene2 extends Phaser.Scene {
 
 
     create(){
-        const cPB = this.add.image(10, 10, 'cPB').setOrigin(0).setInteractive();
-        this.add.image(10, (cPB.height + 20) ,'jPB').setOrigin(0).setInteractive();
+        const cPB = this.add.image(0, -50, 'cPB').setInteractive();
+        const jPB = this.add.image(0, 50,'jPB').setInteractive();
+
+        // Create a container and add both objects to it
+        const container = this.add.container(0, 0, [cPB, jPB]);
+
+        // Center the container on the screen
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 2;
+
+        container.setPosition(centerX, centerY);
+
+        
         
         socket.on('roomId', (roomId)=>{
             window.alert( 'Press OK to copy your room id : ' + roomId);
